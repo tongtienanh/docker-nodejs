@@ -1,0 +1,58 @@
+version: '3'
+ 
+services:
+  vh_app:
+    build: 
+      context: ..
+      dockerfile: ./docker-nodejs/Dockerfile
+    restart: unless-stopped
+    container_name: vh_app
+    ports: 
+      - 8000:3000
+    links: 
+      - vh_db
+    volumes: 
+      - ${CRM_SOURCE}:/usr/src/app
+      - /usr/src/app/node_modules
+    networks: 
+      - vuihoc
+
+  vh_db:
+    image: mysql:8
+    container_name: vh_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: db_vuihoc
+      MYSQL_USER: TongAnh
+      MYSQL_PASSWORD: 123456
+    ports:
+      - "6033:3306"
+    volumes:
+      - vh_dbdata:/var/lib/mysql
+      - ./db:/var/database
+    networks:
+      - vuihoc
+
+  vh_phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: vh_phpmyadmin
+    links:
+      - vh_db
+    environment:
+      PMA_HOST: vh_db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: unless-stopped
+    ports:
+      - 8092:80
+    networks:
+      - vuihoc
+    
+volumes:
+  vh_dbdata:
+    driver: local
+
+networks:
+  vuihoc:
+    driver: bridge
